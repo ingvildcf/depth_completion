@@ -17,8 +17,8 @@ def main():
     """
 
     datasetPath_1 = 'D:\misc_offices_playroom_reception_studies_study_rooms' #~/misc_offices_playroom_reception_studies_study_rooms'
-    folder = '/offices_part2'
-    subFolder = '/office_0027b'
+    folder = '/misc_part1'
+    subFolder = '/computer_lab_0001'
     
     ##############################
     # Options

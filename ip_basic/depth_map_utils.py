@@ -29,13 +29,22 @@ CROSS_KERNEL_5 = np.asarray(
     ], dtype=np.uint8)
 
 # 5x5 diamond kernel
-DIAMOND_KERNEL_5 = np.array(
+DIAMOND_KERNEL_5_NEW = np.array(
     [
         [0, 0, -1, 0, 0],
         [0, -1, 5, -1, 0],
         [-1, 5, 10, 5, -1],
         [0, -1, 5, -1, 0],
         [0, 0, -1, 0, 0],
+    ], dtype=np.uint8)
+
+DIAMOND_KERNEL_5 = np.array(
+    [
+        [0, 0, 1, 0, 0],
+        [0, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 0],
+        [0, 0, 1, 0, 0],
     ], dtype=np.uint8)
 
 # 7x7 cross kernel
@@ -63,7 +72,7 @@ DIAMOND_KERNEL_7 = np.asarray(
     ], dtype=np.uint8)
 
 
-def fill_in_fast(depth_map, max_depth=100.0, custom_kernel=DIAMOND_KERNEL_5,
+def fill_in_fast(depth_map, max_depth=100.0, custom_kernel=CROSS_KERNEL_5,
                  extrapolate=False, blur_type='bilateral'):
     """Fast, in-place depth completion.
 
