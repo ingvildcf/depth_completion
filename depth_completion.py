@@ -6,21 +6,26 @@ import time
 import cv2
 import numpy as np
 import png
+import zipfile
 
-from ip_basic import depth_map_utils
-from ip_basic import vis_utils
+from ip_basic.depth_map_utils import *
+from ip_basic.vis_utils import *
 
 
 def main():
     """Depth maps are saved to the 'outputs' folder.
     """
-
+    datasetPath_1 = 'D:\misc_offices_playroom_reception_studies_study_rooms' #~/misc_offices_playroom_reception_studies_study_rooms'
+    folderPath = '/misc_part1/computer_lab_0001'
+    #D:\misc_offices_playroom_reception_studies_study_rooms\misc_part1
+    #zipped_dataset = zipfile.ZipFile(zipPath + folderPath + '/a-1315405853.035233-2387245691.DUMP', mode='r') 
+    #zipped_dataset.read('/a-1315405853.035233-2387245691.DUMP')
+    
     ##############################
     # Options
     ##############################
     # Validation set
-    input_depth_dir = os.path.expanduser(
-        '~/Kitti/depth/depth_selection/val_selection_cropped/velodyne_raw')
+    input_depth_dir = os.path.expanduser(datasetPath_1 + folderPath)
     data_split = 'val'
 
     # Test set
@@ -97,6 +102,7 @@ def main():
     last_total_times = np.repeat([1.0], avg_time_arr_length)
 
     num_images = len(images_to_use)
+    print(num_images)
     for i in range(num_images):
 
         depth_image_path = images_to_use[i]
