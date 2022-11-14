@@ -91,10 +91,10 @@ def main():
             os.makedirs(output_depth_dir)
         else:
             raise FileExistsError('Already exists!')
-        print('Output dir:', output_depth_dir)
+        #print('Output dir:', output_depth_dir)
 
     # Get images in sorted order
-    images_to_use = sorted(glob.glob(input_depth_dir + '/*'))
+    images_to_use = sorted(glob.glob(input_depth_dir + '/*.pgm'))
 
     # Rolling average array of times for time estimation
     avg_time_arr_length = 10
