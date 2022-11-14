@@ -15,17 +15,16 @@ from ip_basic.vis_utils import *
 def main():
     """Depth maps are saved to the 'outputs' folder.
     """
+
     datasetPath_1 = 'D:\misc_offices_playroom_reception_studies_study_rooms' #~/misc_offices_playroom_reception_studies_study_rooms'
-    folderPath = '/misc_part1/computer_lab_0001'
-    #D:\misc_offices_playroom_reception_studies_study_rooms\misc_part1
-    #zipped_dataset = zipfile.ZipFile(zipPath + folderPath + '/a-1315405853.035233-2387245691.DUMP', mode='r') 
-    #zipped_dataset.read('/a-1315405853.035233-2387245691.DUMP')
+    folder = '/offices_part2'
+    subFolder = '/office_0027b'
     
     ##############################
     # Options
     ##############################
     # Validation set
-    input_depth_dir = os.path.expanduser(datasetPath_1 + folderPath)
+    input_depth_dir = os.path.expanduser(datasetPath_1 + folder + subFolder)
     data_split = 'val'
 
     # Test set
@@ -34,19 +33,24 @@ def main():
     # data_split = 'test'
 
     # Fast fill with Gaussian blur @90Hz (paper result)
-    fill_type = 'fast'
-    extrapolate = True
-    blur_type = 'gaussian'
+    #fill_type = 'fast'
+    #extrapolate = True
+    #blur_type = 'gaussian'
 
     # Fast Fill with bilateral blur, no extrapolation @87Hz (recommended)
-    # fill_type = 'fast'
-    # extrapolate = False
-    # blur_type = 'bilateral'
+    fill_type = 'fast'
+    extrapolate = False
+    blur_type = 'bilateral'
 
     # Multi-scale dilations with extra noise removal, no extrapolation @ 30Hz
     # fill_type = 'multiscale'
     # extrapolate = False
     # blur_type = 'bilateral'
+
+    # Ingvild settings:
+    #fill_type = 'multiscale'
+    #extrapolate = False
+    #blur_type = 'bilateral'
 
     # Save output to disk or show process
     save_output = True
@@ -68,7 +72,7 @@ def main():
 
     # Create output folder
     this_file_path = os.path.dirname(os.path.realpath(__file__))
-    outputs_dir = this_file_path + '/outputs'
+    outputs_dir = this_file_path + '/outputs' + folder + subFolder
     os.makedirs(outputs_dir, exist_ok=True)
 
     output_folder_prefix = 'depth_' + data_split
@@ -94,7 +98,10 @@ def main():
         #print('Output dir:', output_depth_dir)
 
     # Get images in sorted order
-    images_to_use = sorted(glob.glob(input_depth_dir + '/*.pgm'))
+    images = sorted(glob.glob(input_depth_dir + '/*.pgm'))
+
+    # Use only every 10th image
+    images_to_use = images[::10]
 
     # Rolling average array of times for time estimation
     avg_time_arr_length = 10
