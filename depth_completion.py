@@ -130,10 +130,10 @@ def main():
         # Fill in
         start_fill_time = time.time()
         if fill_type == 'fast':
-            final_depths = depth_map_utils.fill_in_fast(
+            final_depths = fill_in_fast(
                 projected_depths, extrapolate=extrapolate, blur_type=blur_type)
         elif fill_type == 'multiscale':
-            final_depths, process_dict = depth_map_utils.fill_in_multiscale(
+            final_depths, process_dict = fill_in_multiscale(
                 projected_depths, extrapolate=extrapolate, blur_type=blur_type,
                 show_process=show_process)
         else:
@@ -161,7 +161,7 @@ def main():
                 image_jet = cv2.applyColorMap(
                     np.uint8(value / np.amax(value) * 255),
                     cv2.COLORMAP_JET)
-                vis_utils.cv2_show_image(
+                cv2_show_image(
                     key, image_jet,
                     img_size, (img_x, img_y))
 
