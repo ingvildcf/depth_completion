@@ -1,9 +1,8 @@
 *.pyc
 
-outputs
-outputs2
+outputs/
+outputs2/
 
 # PyCharm
 .idea
-convertions.py
-convert.py
+
