@@ -72,7 +72,7 @@ DIAMOND_KERNEL_7 = np.asarray(
     ], dtype=np.uint8)
 
 
-def fill_in_fast(depth_map, max_depth=100.0, custom_kernel=CROSS_KERNEL_5,
+def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=CROSS_KERNEL_5,
                  extrapolate=False, blur_type='bilateral'):
     """Fast, in-place depth completion.
 
@@ -91,7 +91,7 @@ def fill_in_fast(depth_map, max_depth=100.0, custom_kernel=CROSS_KERNEL_5,
     """
 
     # Invert
-    valid_pixels = (depth_map > 0.1)
+    valid_pixels = (depth_map > 0.01)
     depth_map[valid_pixels] = max_depth - depth_map[valid_pixels]
 
     # Dilate
@@ -101,13 +101,13 @@ def fill_in_fast(depth_map, max_depth=100.0, custom_kernel=CROSS_KERNEL_5,
     depth_map = cv2.morphologyEx(depth_map, cv2.MORPH_CLOSE, FULL_KERNEL_5)
 
     # Fill empty spaces with dilated values
-    empty_pixels = (depth_map < 0.1)
+    empty_pixels = (depth_map < 0.01)
     dilated = cv2.dilate(depth_map, FULL_KERNEL_7)
     depth_map[empty_pixels] = dilated[empty_pixels]
 
     # Extend highest pixel to top of image
     if extrapolate:
-        top_row_pixels = np.argmax(depth_map > 0.1, axis=0)
+        top_row_pixels = np.argmax(depth_map > 0.01, axis=0)
         top_pixel_values = depth_map[top_row_pixels, range(depth_map.shape[1])]
 
         for pixel_col_idx in range(depth_map.shape[1]):
@@ -115,7 +115,7 @@ def fill_in_fast(depth_map, max_depth=100.0, custom_kernel=CROSS_KERNEL_5,
                 top_pixel_values[pixel_col_idx]
 
         # Large Fill
-        empty_pixels = depth_map < 0.1
+        empty_pixels = depth_map < 0.01
         dilated = cv2.dilate(depth_map, FULL_KERNEL_31)
         depth_map[empty_pixels] = dilated[empty_pixels]
 
@@ -128,18 +128,22 @@ def fill_in_fast(depth_map, max_depth=100.0, custom_kernel=CROSS_KERNEL_5,
         depth_map = cv2.bilateralFilter(depth_map, 5, 1.5, 2.0)
     elif blur_type == 'gaussian':
         # Gaussian blur
-        valid_pixels = (depth_map > 0.1)
+        valid_pixels = (depth_map > 0.01)
         blurred = cv2.GaussianBlur(depth_map, (5, 5), 0)
         depth_map[valid_pixels] = blurred[valid_pixels]
 
     # Invert
-    valid_pixels = (depth_map > 0.1)
+    valid_pixels = (depth_map > 0.01)
     depth_map[valid_pixels] = max_depth - depth_map[valid_pixels]
+    
+    
+    #print('Max value :', np.max(depth_map[valid_pixels]))
+    #print('Min value :', np.min(depth_map[valid_pixels]))
 
     return depth_map
 
 
-def fill_in_multiscale(depth_map, max_depth=100.0,
+def fill_in_multiscale(depth_map, max_depth=10.0,
                        dilation_kernel_far=CROSS_KERNEL_3,
                        dilation_kernel_med=CROSS_KERNEL_5,
                        dilation_kernel_near=CROSS_KERNEL_7,
@@ -171,13 +175,13 @@ def fill_in_multiscale(depth_map, max_depth=100.0,
     depths_in = np.float32(depth_map)
 
     # Calculate bin masks before inversion
-    valid_pixels_near = (depths_in > 0.1) & (depths_in <= 15.0)
-    valid_pixels_med = (depths_in > 15.0) & (depths_in <= 30.0)
-    valid_pixels_far = (depths_in > 30.0)
+    valid_pixels_near = (depths_in > 0.01) & (depths_in <= 1.50)
+    valid_pixels_med = (depths_in > 1.50) & (depths_in <= 3.00)
+    valid_pixels_far = (depths_in > 3.00)
 
     # Invert (and offset)
     s1_inverted_depths = np.copy(depths_in)
-    valid_pixels = (s1_inverted_depths > 0.1)
+    valid_pixels = (s1_inverted_depths > 0.01)
     s1_inverted_depths[valid_pixels] = \
         max_depth - s1_inverted_depths[valid_pixels]
 

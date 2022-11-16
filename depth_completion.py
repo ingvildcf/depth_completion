@@ -11,6 +11,40 @@ import zipfile
 from ip_basic.depth_map_utils import *
 from ip_basic.vis_utils import *
 
+from PIL import Image
+import time
+
+
+MAX_DEPTH = 10.00
+
+DEPTH_PARAM1 = 351.30
+DEPTH_PARAM2 = 1092.50
+
+def convert_to_metres(depth_image):
+    return DEPTH_PARAM1 / (DEPTH_PARAM2 - depth_image)
+
+def read_pgm(filename):
+    """Return a raster of integers from a PGM as a list of lists."""
+    raster = []
+    try:
+        with open(filename, 'rb') as pgmf:
+            header = pgmf.readline()
+            assert header[:2] == b'P5'
+            (width, height) = [int(i) for i in header.split()[1:3]]
+            depth = int(header.split()[3])
+            assert depth <= 65535
+            for y in range(height):
+                row = []
+                for y in range(width):
+                    low_bits = ord(pgmf.read(1))
+                    row.append(low_bits+255*ord(pgmf.read(1)))
+                raster.append(row)
+    except:
+        print("Error reading file: {}".format(filename))
+        return None
+    return np.array(raster)
+
+
 
 def main():
     """Depth maps are saved to the 'outputs' folder.
@@ -35,22 +69,21 @@ def main():
     # Fast fill with Gaussian blur @90Hz (paper result)
     #fill_type = 'fast'
     #extrapolate = True
-    #blur_type = 'gaussian'
+    blur_type = 'gaussian'
 
     # Fast Fill with bilateral blur, no extrapolation @87Hz (recommended)
-    fill_type = 'fast'
-    extrapolate = False
-    blur_type = 'bilateral'
+    #fill_type = 'fast'
+    #extrapolate = False
+    #blur_type = 'bilateral'
 
     # Multi-scale dilations with extra noise removal, no extrapolation @ 30Hz
     # fill_type = 'multiscale'
     # extrapolate = False
     # blur_type = 'bilateral'
 
-    # Ingvild settings:
-    #fill_type = 'multiscale'
-    #extrapolate = False
-    #blur_type = 'bilateral'
+    fill_type = 'fast'
+    extrapolate = False
+    #blur_type = None
 
     # Save output to disk or show process
     save_output = True
@@ -109,7 +142,7 @@ def main():
     last_total_times = np.repeat([1.0], avg_time_arr_length)
 
     num_images = len(images_to_use)
-    print(num_images)
+   
     for i in range(num_images):
 
         depth_image_path = images_to_use[i]
@@ -131,17 +164,27 @@ def main():
         start_total_time = time.time()
 
         # Load depth projections from uint16 image
-        depth_image = cv2.imread(depth_image_path, cv2.IMREAD_ANYDEPTH)
-        projected_depths = np.float32(depth_image / 256.0)
+        #depth_image = cv2.imread(depth_image_path, cv2.IMREAD_ANYDEPTH)
+        #projected_depths = np.float32(depth_image / 256.0)
+
+        depth_image = read_pgm(depth_image_path)
+        projected_depths = convert_to_metres(depth_image)
+        projected_depths = np.clip(projected_depths, 0, MAX_DEPTH)
+
+        #Image.fromarray((projected_depths/10.0*256).astype(np.uint8)).show()
+        #time.sleep(2)
+
+        projected_depths[projected_depths == MAX_DEPTH] = MAX_DEPTH - 0.03
+        projected_depths = (projected_depths).astype(np.float32)
 
         # Fill in
         start_fill_time = time.time()
         if fill_type == 'fast':
             final_depths = fill_in_fast(
-                projected_depths, extrapolate=extrapolate, blur_type=blur_type)
+                projected_depths, max_depth=10.0, extrapolate=extrapolate, blur_type=blur_type)
         elif fill_type == 'multiscale':
             final_depths, process_dict = fill_in_multiscale(
-                projected_depths, extrapolate=extrapolate, blur_type=blur_type,
+                projected_depths, max_depth=10.0, extrapolate=extrapolate, blur_type=blur_type,
                 show_process=show_process)
         else:
             raise ValueError('Invalid fill_type {}'.format(fill_type))
@@ -149,7 +192,10 @@ def main():
 
         # Display images from process_dict
         if fill_type == 'multiscale' and show_process:
-            img_size = (570, 165)
+            
+            #img_size = (570, 165) # Original
+
+            img_size = (512, 424) # From 
 
             x_start = 80
             y_start = 50
@@ -186,18 +232,28 @@ def main():
         # Save depth images to disk
         if save_depth_maps:
             depth_image_file_name = os.path.split(depth_image_path)[1]
-
+            
+            #Image.fromarray((final_depths/10.0*256).astype(np.uint8)).show()    
+            #time.sleep(2)
+            
             # Save depth map to a uint16 png (same format as disparity maps)
-            file_path = output_depth_dir + '/' + depth_image_file_name
-            with open(file_path, 'wb') as f:
-                depth_image = (final_depths * 256).astype(np.uint16)
-
+            file_path = output_depth_dir + '/' + depth_image_file_name #+ ".png"
+            
+            #depth_image = (final_depths/10.0 * 256).astype(np.uint8)
+            d_im = Image.fromarray((final_depths/10.0*256).astype(np.uint8))    
+            d_im.save(file_path + ".png")
+            
+            #with open(file_path, 'wb') as f:
+                #depth_image = (final_depths * 256).astype(np.uint16)
+                #depth_image = (final_depths/10.0 * 256).astype(np.uint8)
+                #d_im = Image.fromarray((final_depths/10.0*256).astype(np.uint8))    
+                #d_im.save(file_path)
                 # pypng is used because cv2 cannot save uint16 format images
-                writer = png.Writer(width=depth_image.shape[1],
-                                    height=depth_image.shape[0],
-                                    bitdepth=16,
-                                    greyscale=True)
-                writer.write(f, depth_image)
+                #writer = png.Writer(width=depth_image.shape[1],
+                #                    height=depth_image.shape[0],
+                #                    bitdepth=16,
+                #                    greyscale=True)
+                #writer.write(f, depth_image)
 
         end_total_time = time.time()
 
