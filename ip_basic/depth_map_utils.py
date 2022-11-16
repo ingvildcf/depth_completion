@@ -72,7 +72,7 @@ DIAMOND_KERNEL_7 = np.asarray(
     ], dtype=np.uint8)
 
 
-def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=CROSS_KERNEL_5,
+def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=DIAMOND_KERNEL_5,
                  extrapolate=False, blur_type='bilateral'):
     """Fast, in-place depth completion.
 

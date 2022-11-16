@@ -6,7 +6,6 @@ import time
 import cv2
 import numpy as np
 import png
-import zipfile
 
 from ip_basic.depth_map_utils import *
 from ip_basic.vis_utils import *
@@ -69,7 +68,7 @@ def main():
     # Fast fill with Gaussian blur @90Hz (paper result)
     #fill_type = 'fast'
     #extrapolate = True
-    blur_type = 'gaussian'
+    #blur_type = 'gaussian'
 
     # Fast Fill with bilateral blur, no extrapolation @87Hz (recommended)
     #fill_type = 'fast'
@@ -77,13 +76,13 @@ def main():
     #blur_type = 'bilateral'
 
     # Multi-scale dilations with extra noise removal, no extrapolation @ 30Hz
-    # fill_type = 'multiscale'
+    fill_type = 'multiscale'
     # extrapolate = False
     # blur_type = 'bilateral'
 
-    fill_type = 'fast'
+    #fill_type = 'fast'
     extrapolate = False
-    #blur_type = None
+    blur_type = None
 
     # Save output to disk or show process
     save_output = True
