@@ -1,4 +1,5 @@
 import collections
+from depth_completion import MAX_DEPTH
 
 import cv2
 import numpy as np
@@ -73,7 +74,7 @@ DIAMOND_KERNEL_7 = np.asarray(
 
 
 def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=DIAMOND_KERNEL_5,
-                 extrapolate=False, blur_type='bilateral'):
+                 extrapolate=False, blur_type='bilateral', morph_kernel=FULL_KERNEL_5, dilation_kernel=FULL_KERNEL_9):
     """Fast, in-place depth completion.
 
     Args:
@@ -85,6 +86,8 @@ def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=DIAMOND_KERNEL_5,
         blur_type:
             'bilateral' - preserves local structure (recommended)
             'gaussian' - provides lower RMSE
+        morph_kernel: kernel to use for morphology
+        dilation_kernel: kernel to use for dilation
 
     Returns:
         depth_map: dense depth map
@@ -98,11 +101,11 @@ def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=DIAMOND_KERNEL_5,
     depth_map = cv2.dilate(depth_map, custom_kernel)
 
     # Hole closing
-    depth_map = cv2.morphologyEx(depth_map, cv2.MORPH_CLOSE, FULL_KERNEL_5)
+    depth_map = cv2.morphologyEx(depth_map, cv2.MORPH_CLOSE, morph_kernel) # FULL_KERNEL_5 (or 7)
 
     # Fill empty spaces with dilated values
     empty_pixels = (depth_map < 0.01)
-    dilated = cv2.dilate(depth_map, FULL_KERNEL_7)
+    dilated = cv2.dilate(depth_map, dilation_kernel) #FULL_KERNEL_7 (or 9)
     depth_map[empty_pixels] = dilated[empty_pixels]
 
     # Extend highest pixel to top of image
@@ -143,10 +146,13 @@ def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=DIAMOND_KERNEL_5,
     return depth_map
 
 
-def fill_in_multiscale(depth_map, max_depth=10.0,
+def fill_in_multiscale(depth_map, max_depth=MAX_DEPTH,
                        dilation_kernel_far=CROSS_KERNEL_3,
                        dilation_kernel_med=CROSS_KERNEL_5,
                        dilation_kernel_near=CROSS_KERNEL_7,
+                       small_hole_kernel=FULL_KERNEL_5,
+                       hole_kernel=FULL_KERNEL_9,
+                       large_hole_kernel=FULL_KERNEL_5,
                        extrapolate=False,
                        blur_type='bilateral',
                        show_process=False):
@@ -209,7 +215,7 @@ def fill_in_multiscale(depth_map, max_depth=10.0,
 
     # Small hole closure
     s3_closed_depths = cv2.morphologyEx(
-        s2_dilated_depths, cv2.MORPH_CLOSE, FULL_KERNEL_5)
+        s2_dilated_depths, cv2.MORPH_CLOSE, small_hole_kernel) #FULL_KERNEL_5
 
     # Median blur to remove outliers
     s4_blurred_depths = np.copy(s3_closed_depths)
@@ -229,7 +235,7 @@ def fill_in_multiscale(depth_map, max_depth=10.0,
     empty_pixels = ~valid_pixels & top_mask
 
     # Hole fill
-    dilated = cv2.dilate(s4_blurred_depths, FULL_KERNEL_9)
+    dilated = cv2.dilate(s4_blurred_depths, hole_kernel) #FULL_KERNEL_9
     s5_dilated_depths = np.copy(s4_blurred_depths)
     s5_dilated_depths[empty_pixels] = dilated[empty_pixels]
 
@@ -253,7 +259,7 @@ def fill_in_multiscale(depth_map, max_depth=10.0,
     s7_blurred_depths = np.copy(s6_extended_depths)
     for i in range(6):
         empty_pixels = (s7_blurred_depths < 0.1) & top_mask
-        dilated = cv2.dilate(s7_blurred_depths, FULL_KERNEL_5)
+        dilated = cv2.dilate(s7_blurred_depths, large_hole_kernel) #FULL_KERNEL_5
         s7_blurred_depths[empty_pixels] = dilated[empty_pixels]
 
     # Median blur

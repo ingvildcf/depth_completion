@@ -2,6 +2,7 @@
 
 outputs/
 outputs2/
+test_outputs/
 
 # PyCharm
 .idea

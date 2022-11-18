@@ -49,7 +49,9 @@ def main():
     """Depth maps are saved to the 'outputs' folder.
     """
 
-    datasetPath_1 = 'D:\misc_offices_playroom_reception_studies_study_rooms' #~/misc_offices_playroom_reception_studies_study_rooms'
+    datasetPath_1 = 'D:/misc_offices_playroom_reception_studies_study_rooms'
+    datasetPath_2 = 'D:/cafe_dining_furniture_home_off_kitchen_libraries_living_rooms'
+    datasetPath_3 = 'D:/basements_bedrooms_bathrooms_bookstores'
     folder = '/misc_part1'
     subFolder = '/computer_lab_0001'
     
@@ -76,12 +78,13 @@ def main():
     #blur_type = 'bilateral'
 
     # Multi-scale dilations with extra noise removal, no extrapolation @ 30Hz
-    fill_type = 'multiscale'
+    #fill_type = 'multiscale'
     # extrapolate = False
     # blur_type = 'bilateral'
 
-    #fill_type = 'fast'
-    extrapolate = False
+    # Best so far: 
+    fill_type = 'fast'
+    extrapolate = True
     blur_type = None
 
     # Save output to disk or show process
