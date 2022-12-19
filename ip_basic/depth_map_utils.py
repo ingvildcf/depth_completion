@@ -72,6 +72,20 @@ DIAMOND_KERNEL_7 = np.asarray(
         [0, 0, 0, 1, 0, 0, 0],
     ], dtype=np.uint8)
 
+# 7x7 diamond kernel
+DIAMOND_KERNEL_9 = np.asarray(
+    [
+        [0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 1, 1, 1, 0, 0, 0],
+        [0, 0, 1, 1, 1, 1, 1, 0, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 1, 0, 0],
+        [0, 0, 0, 1, 1, 1, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    ], dtype=np.uint8)
+
 
 def fill_in_fast(depth_map, max_depth=10.0, custom_kernel=DIAMOND_KERNEL_5,
                  extrapolate=False, blur_type='bilateral', morph_kernel=FULL_KERNEL_5, dilation_kernel=FULL_KERNEL_9):

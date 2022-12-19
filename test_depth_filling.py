@@ -138,20 +138,20 @@ def process_images(dataset_path, folders, fill_type, extrapolate, blur_type,
 
 
 def main():
-    """Depth maps are saved to the 'outputs' folder.
-    """
-
+    
+    # Dataset paths
     folder11 = '/misc_part1/computer_lab_0001'
 
     folder21 = '/kitchens_part2/kitchen_0025'
-
     folder22 = '/living_rooms_part3/living_room_0045'
+
+    #folder31 = '/bathrooms_part1/bathroom_0004' #?
     
     datasetPath1 = 'D:/misc_offices_playroom_reception_studies_study_rooms' #+ folders1 #+ subFolder1
     datasetPath2 = 'D:/cafe_dining_furniture_home_off_kitchen_libraries_living_rooms' #+ folders2 #+ subFolder2
     datasetPath3 = 'D:/basements_bedrooms_bathrooms_bookstores' #+ folders3 #+ subFolder3
 
-    # Best so far: 
+    # Best settings so far: 
     fill_type = 'fast'
     extrapolate = True
     blur_type = None
@@ -173,7 +173,6 @@ def main():
         morph_kernel, dilation_kernel, small_hole_kernel, hole_kernel, large_hole_kernel)
     process_images(datasetPath2, folder22, fill_type, extrapolate, blur_type, custom_kernel, 
         morph_kernel, dilation_kernel, small_hole_kernel, hole_kernel, large_hole_kernel)
-
 
 
 if __name__ == "__main__":
